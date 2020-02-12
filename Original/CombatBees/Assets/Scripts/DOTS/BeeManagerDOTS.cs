@@ -6,10 +6,12 @@ using Unity.Transforms;     //mi serve per il component Translation
 using Unity.Rendering;      //mi serve per il component RenderMesh
 using Unity.Collections;    //mi serve per i NativeArray
 using Unity.Mathematics;
-
+using UnityEngine.Jobs;
 
 public class BeeManagerDOTS : MonoBehaviour
 {
+    public static BeeManagerDOTS Instance { get; private set; }
+
     [Header("GameStats")]
     [SerializeField] private int startBeeCount = 50;
 
@@ -18,10 +20,17 @@ public class BeeManagerDOTS : MonoBehaviour
     [SerializeField] private Material blueMaterial, yellowMaterial;
 
     [Header("BeeStats")]
-    private float beeMoveSpeed = 5;
+    public NativeArray<float3> positionArray;
+    public float beeMoveSpeed = 5;
+   // public float BeeMoveSpeed { get { return beeMoveSpeed; } }
 
     EntityManager entityManager;
     EntityArchetype blueArchetype, yellowArchetype;
+
+    private void Awake()
+    {
+        Instance = this;
+    }
 
     private void Start()
     {
@@ -29,12 +38,14 @@ public class BeeManagerDOTS : MonoBehaviour
         entityManager = World.Active.EntityManager;
 
         //creo l'archetipo
-        blueArchetype = entityManager.CreateArchetype(typeof(Translation), typeof(RenderMesh), typeof(LocalToWorld), typeof(MoveSpeedComponent));
-        yellowArchetype = entityManager.CreateArchetype(typeof(Translation), typeof(RenderMesh), typeof(LocalToWorld), typeof(MoveSpeedComponent));
+        blueArchetype = entityManager.CreateArchetype(typeof(Translation), typeof(RenderMesh), typeof(LocalToWorld)/*, typeof(MoveSpeedComponent)*/);
+        yellowArchetype = entityManager.CreateArchetype(typeof(Translation), typeof(RenderMesh), typeof(LocalToWorld)/*, typeof(MoveSpeedComponent)*/);
 
         //uso un array nativo per allocare le entities
         NativeArray<Entity> blueArray = new NativeArray<Entity>(startBeeCount / 2, Allocator.Temp);
         NativeArray<Entity> yellowArray = new NativeArray<Entity>(startBeeCount / 2, Allocator.Temp);
+
+        positionArray = new NativeArray<float3>(startBeeCount, Allocator.Persistent);
 
         entityManager.CreateEntity(blueArchetype, blueArray);
         entityManager.CreateEntity(yellowArchetype, yellowArray);
@@ -44,14 +55,15 @@ public class BeeManagerDOTS : MonoBehaviour
             Entity entity = blueArray[i];
 
             entityManager.SetComponentData(entity, new Translation { Value = new float3(UnityEngine.Random.Range(-Field.size.x / 2, 0), UnityEngine.Random.Range(-Field.size.y / 2, Field.size.y / 2), UnityEngine.Random.Range(-Field.size.z / 2, Field.size.z / 2)) });
-            
+
             entityManager.SetSharedComponentData(entity, new RenderMesh
             {
                 mesh = beeMesh,
                 material = blueMaterial,
             });
 
-            entityManager.SetSharedComponentData(entity, new MoveSpeedComponent { moveSpeed = beeMoveSpeed });
+            positionArray[i] = entityManager.GetComponentData<Translation>(entity).Value;
+            //entityManager.SetSharedComponentData(entity, new MoveSpeedComponent { moveSpeed = beeMoveSpeed });
         }
 
         for (int i = 0; i < yellowArray.Length; i++)
@@ -66,9 +78,12 @@ public class BeeManagerDOTS : MonoBehaviour
                 material = yellowMaterial,
             });
 
-            entityManager.SetSharedComponentData(entity, new MoveSpeedComponent { moveSpeed = beeMoveSpeed });
+
+            positionArray[i + blueArray.Length] = entityManager.GetComponentData<Translation>(entity).Value;
+            //entityManager.SetSharedComponentData(entity, new MoveSpeedComponent { moveSpeed = beeMoveSpeed });
         }
 
         blueArray.Dispose();
+        yellowArray.Dispose();
     }
 }

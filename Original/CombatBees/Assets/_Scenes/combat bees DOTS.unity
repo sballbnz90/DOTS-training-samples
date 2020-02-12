@@ -331,6 +331,7 @@ MonoBehaviour:
   beeMesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
   blueMaterial: {fileID: 2100000, guid: 53024519f6f02bd4f88dea259ba7b562, type: 2}
   yellowMaterial: {fileID: 2100000, guid: d7967835ec649954bb843ae433cafa20, type: 2}
+  beeMoveSpeed: 50
 --- !u!1 &563381092
 GameObject:
   m_ObjectHideFlags: 0
