@@ -38,8 +38,8 @@ public class BeeManagerDOTS : MonoBehaviour
         entityManager = World.Active.EntityManager;
 
         //creo l'archetipo
-        blueArchetype = entityManager.CreateArchetype(typeof(Translation), typeof(RenderMesh), typeof(LocalToWorld)/*, typeof(MoveSpeedComponent)*/);
-        yellowArchetype = entityManager.CreateArchetype(typeof(Translation), typeof(RenderMesh), typeof(LocalToWorld)/*, typeof(MoveSpeedComponent)*/);
+        blueArchetype = entityManager.CreateArchetype(typeof(Translation), typeof(RenderMesh), typeof(LocalToWorld), typeof(BeeComponent));
+        yellowArchetype = entityManager.CreateArchetype(typeof(Translation), typeof(RenderMesh), typeof(LocalToWorld), typeof(BeeComponent));
 
         //uso un array nativo per allocare le entities
         NativeArray<Entity> blueArray = new NativeArray<Entity>(startBeeCount / 2, Allocator.Temp);
@@ -63,6 +63,12 @@ public class BeeManagerDOTS : MonoBehaviour
             });
 
             positionArray[i] = entityManager.GetComponentData<Translation>(entity).Value;
+
+            entityManager.SetComponentData(entity, new BeeComponent
+            {
+                team = 0,
+                home = new float3(-Field.size.x, 0, 0)
+            });
             //entityManager.SetSharedComponentData(entity, new MoveSpeedComponent { moveSpeed = beeMoveSpeed });
         }
 
@@ -81,6 +87,12 @@ public class BeeManagerDOTS : MonoBehaviour
 
             positionArray[i + blueArray.Length] = entityManager.GetComponentData<Translation>(entity).Value;
             //entityManager.SetSharedComponentData(entity, new MoveSpeedComponent { moveSpeed = beeMoveSpeed });
+
+            entityManager.SetComponentData(entity, new BeeComponent
+            {
+                team = 1,
+                home = new float3(Field.size.x, 0, 0)
+            });
         }
 
         blueArray.Dispose();

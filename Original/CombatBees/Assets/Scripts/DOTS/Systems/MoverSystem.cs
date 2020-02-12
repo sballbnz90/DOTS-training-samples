@@ -12,22 +12,34 @@ using Unity.Burst;
 public class MoverSystem : JobComponentSystem
 {
     [BurstCompile]
-    private struct MoveJob : IJobParallelFor
+    private struct MoveJob : IJobForEach<Translation>
     {
         public EntityCommandBuffer.Concurrent ecb;
         public NativeArray<float3> positionArray;
         //public NativeArray<float> moveArray;
         public float deltaTime;
+        public float beeMoveSpeed;
 
 
-        public void Execute(int index)
+        //public void Execute(int index)
+        //{
+        //    positionArray[index] += new float3(1, 0, 0) * beeMoveSpeed * deltaTime;
+        //}
+
+        public void Execute(ref Translation c0)
         {
-            positionArray[index] += new float3(1, 0, 0) * BeeManagerDOTS.Instance.beeMoveSpeed * deltaTime;
+            c0.Value += new float3(1, 0, 0) * beeMoveSpeed * deltaTime;
+
+            if(c0.Value.x > 10 || c0.Value.x < -10)
+            {
+                beeMoveSpeed *= -1;
+            }
         }
     }
 
 
-    private EntityQuery beesToMove;
+    private EntityQuery yellowBees;
+    private EntityQuery blueBees;
     private EntityCommandBufferSystem m_entityCommandBufferSystem;
 
 
@@ -35,24 +47,29 @@ public class MoverSystem : JobComponentSystem
     {
         m_entityCommandBufferSystem = World.GetOrCreateSystem<EntityCommandBufferSystem>();
 
-        beesToMove = GetEntityQuery(typeof(Translation));
+        yellowBees = GetEntityQuery(typeof(Translation));
+        blueBees = GetEntityQuery(typeof(Translation));
 
     }
 
     protected override JobHandle OnUpdate(JobHandle inputDeps)
     {
+        
+
         var moverJob = new MoveJob
         {
             positionArray = BeeManagerDOTS.Instance.positionArray,
             deltaTime = Time.deltaTime,
-            ecb = m_entityCommandBufferSystem.CreateCommandBuffer().ToConcurrent()
-        }.Schedule(BeeManagerDOTS.Instance.positionArray.Length, 1000);
+            ecb = m_entityCommandBufferSystem.CreateCommandBuffer().ToConcurrent(),
+            beeMoveSpeed = BeeManagerDOTS.Instance.beeMoveSpeed
+
+        };//.Schedule(BeeManagerDOTS.Instance.positionArray.Length, 1000);
 
 
-        m_entityCommandBufferSystem.AddJobHandleForProducer(moverJob);
+        // m_entityCommandBufferSystem.AddJobHandleForProducer(moverJob);
 
-        
-        return moverJob;
+
+        return moverJob.Schedule(yellowBees);
 
     }
 }
