@@ -26,7 +26,7 @@ public class BeeManagerDOTS : MonoBehaviour
     public int teamRepulsion = 10;
     public int teamAttraction = 10;
     public float beeMoveSpeed = 5;
-    
+
 
     public EntityManager entityManager;
     public NativeArray<Entity> blueArray;
@@ -73,7 +73,7 @@ public class BeeManagerDOTS : MonoBehaviour
 
             entityManager.SetComponentData(entity, new BeeComponent
             {
-                team = 0,
+                team = 1,
                 home = new float3(-Field.size.x, 0, 0),
                 randomGenerator = new Unity.Mathematics.Random((uint)UnityEngine.Random.Range(1, 10000))
             });
@@ -103,7 +103,7 @@ public class BeeManagerDOTS : MonoBehaviour
 
             entityManager.SetComponentData(entity, new BeeComponent
             {
-                team = 1,
+                team = 2,
                 home = new float3(Field.size.x, 0, 0),
                 randomGenerator = new Unity.Mathematics.Random((uint)UnityEngine.Random.Range(1, 10000))
             });
@@ -113,7 +113,7 @@ public class BeeManagerDOTS : MonoBehaviour
             actualYellow++;
         }
 
-        
+
 
     }
 

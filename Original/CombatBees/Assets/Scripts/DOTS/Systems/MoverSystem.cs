@@ -18,11 +18,8 @@ public class MoverSystem : JobComponentSystem
         [ReadOnly] public NativeArray<Entity> teammates;
         public float deltaTime;
         public float beeMoveSpeed;
-        //public int attractor;
-        //public int repulsor;
         public int teamRepulsion;
         public int teamAttraction;
-        public float3 baseVel;
 
         //non può essere translation perchè non posso leggerci e scriverci in contemporanea
         [ReadOnly] public ComponentDataFromEntity<LocalToWorld> translationData;
@@ -83,7 +80,6 @@ public class MoverSystem : JobComponentSystem
                 translationData = trData,
                 teamRepulsion = BeeManagerDOTS.Instance.teamRepulsion,
                 teamAttraction = BeeManagerDOTS.Instance.teamAttraction,
-                baseVel = UnityEngine.Random.insideUnitSphere
                 
             }.Schedule(yellowBees, dep);
 
@@ -101,7 +97,6 @@ public class MoverSystem : JobComponentSystem
                 translationData = trData,
                 teamRepulsion = BeeManagerDOTS.Instance.teamRepulsion,
                 teamAttraction = BeeManagerDOTS.Instance.teamAttraction,
-                baseVel = UnityEngine.Random.insideUnitSphere
 
             }.Schedule(blueBees, dep);
 
