@@ -3,6 +3,8 @@ using Unity.Entities;
 using Unity.Collections;
 using Unity.Rendering;
 using Unity.Transforms;
+using System;
+using System.Collections.Generic;
 
 public class BeeEntityManager : MonoBehaviour
 {
@@ -19,8 +21,8 @@ public class BeeEntityManager : MonoBehaviour
     public float flightJitter;
     public float damping;
 
-    public NativeList<Entity> yellowBeesTeam = new NativeList<Entity>();
-    public NativeList<Entity> blueBeesTeam = new NativeList<Entity>();
+    public List<Entity> yellowBeesTeam = new List<Entity>();
+    public List<Entity> blueBeesTeam = new List<Entity>();
     public float teamAttraction;
     public float teamRepulsion;
     public float aggression;
@@ -47,11 +49,12 @@ public class BeeEntityManager : MonoBehaviour
 
     void Start()
     {
-        EntityManager EM = World.Active.EntityManager;
+        EntityManager EM = World.DefaultGameObjectInjectionWorld.EntityManager;
 
 
         EntityArchetype beeArchetype = EM.CreateArchetype(
             typeof(BeeComponent),
+            typeof(BeeDeadandVelocityComponent),
             typeof(RenderMesh),
             typeof(LocalToWorld),
             typeof(Translation), 
@@ -61,8 +64,6 @@ public class BeeEntityManager : MonoBehaviour
 
         NativeArray<Entity> yellowBeeArray = new NativeArray<Entity>(initBeeCount, Allocator.Temp);
         NativeArray<Entity> blueBeeArray = new NativeArray<Entity>(initBeeCount, Allocator.Temp);
-        yellowBeesTeam = new NativeList<Entity>(Allocator.TempJob);
-        blueBeesTeam = new NativeList<Entity>(Allocator.TempJob);
 
         EM.CreateEntity(beeArchetype, yellowBeeArray);
         EM.CreateEntity(beeArchetype, blueBeeArray);
@@ -75,9 +76,15 @@ public class BeeEntityManager : MonoBehaviour
             EM.SetComponentData(yBee, new BeeComponent
             {
                 team = 0,
-                velocity = Random.insideUnitSphere * maxSpawnSpeed,
                 enemyTarget = Entity.Null,
-                resourceTarget = Entity.Null
+                imTargetof = Entity.Null,
+                resourceTarget = Entity.Null,
+                deathTimer = 0.2f
+            });
+
+            EM.SetComponentData(yBee, new BeeDeadandVelocityComponent
+            {
+                velocity = UnityEngine.Random.insideUnitSphere * maxSpawnSpeed,
             });
 
             EM.SetComponentData(yBee, new Translation
@@ -92,7 +99,7 @@ public class BeeEntityManager : MonoBehaviour
 
             EM.SetComponentData(yBee, new Scale
             {
-                Value = Random.Range(minBeeSize, maxBeeSize)
+                Value = UnityEngine.Random.Range(minBeeSize, maxBeeSize)
             });
 
             EM.SetSharedComponentData(yBee, new RenderMesh
@@ -110,7 +117,15 @@ public class BeeEntityManager : MonoBehaviour
             EM.SetComponentData(bBee, new BeeComponent
             { 
                 team = 1,
-                velocity = Random.insideUnitSphere * maxSpawnSpeed
+                enemyTarget = Entity.Null,
+                imTargetof = Entity.Null,
+                resourceTarget = Entity.Null,
+                deathTimer = 0.2f
+            });
+
+            EM.SetComponentData(bBee, new BeeDeadandVelocityComponent
+            {
+                velocity = UnityEngine.Random.insideUnitSphere * maxSpawnSpeed,
             });
 
             EM.SetComponentData(bBee, new Translation
@@ -125,7 +140,7 @@ public class BeeEntityManager : MonoBehaviour
 
             EM.SetComponentData(bBee, new Scale
             {
-                Value = Random.Range(minBeeSize, maxBeeSize)
+                Value = UnityEngine.Random.Range(minBeeSize, maxBeeSize)
             });
 
             EM.SetSharedComponentData(bBee, new RenderMesh
@@ -139,9 +154,4 @@ public class BeeEntityManager : MonoBehaviour
         blueBeeArray.Dispose();
     }
 
-    private void OnApplicationQuit()
-    {
-        yellowBeesTeam.Dispose();
-        blueBeesTeam.Dispose();
-    }
 }

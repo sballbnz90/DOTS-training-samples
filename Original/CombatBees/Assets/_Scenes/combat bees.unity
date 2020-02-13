@@ -302,7 +302,7 @@ MonoBehaviour:
   attackForce: 500
   hitDistance: 0.5
   maxSpawnSpeed: 75
-  startBeeCount: 100
+  startBeeCount: 2000
 --- !u!4 &374635490
 Transform:
   m_ObjectHideFlags: 0
@@ -553,8 +553,9 @@ GameObject:
   m_Component:
   - component: {fileID: 1342301453}
   - component: {fileID: 1342301452}
+  - component: {fileID: 1342301454}
   m_Layer: 0
-  m_Name: BeeEntityManager
+  m_Name: EntityManagers
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -572,10 +573,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f5cfea5047ab3c448b7598a200d0973a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  beeMesh: {fileID: 10208, guid: 0000000000000000e000000000000000, type: 0}
+  beeMesh: {fileID: 10210, guid: 0000000000000000e000000000000000, type: 0}
   yMat: {fileID: 2100000, guid: 7622351e02f00c744bf41f74649b056f, type: 2}
   bMat: {fileID: 2100000, guid: 205326d9629869542b9adc3a80209a1d, type: 2}
-  initBeeCount: 1000
+  initBeeCount: 500
   minBeeSize: 0.25
   maxBeeSize: 0.5
   maxSpawnSpeed: 75
@@ -602,6 +603,26 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 8
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1342301454
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1342301451}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6b53ac37a41015e4ba60d880cb162ebc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  resourceMesh: {fileID: 0}
+  rescourceMat: {fileID: 0}
+  resourceSize: 0
+  snapStiffness: 0
+  carryStiffness: 0
+  spawnRate: 0.1
+  beesPerResource: 0
+  startResourceCount: 0
 --- !u!1 &1496960977
 GameObject:
   m_ObjectHideFlags: 0

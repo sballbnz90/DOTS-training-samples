@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+
 public class Resource {
 	public Vector3 position;
 	public bool stacked;
