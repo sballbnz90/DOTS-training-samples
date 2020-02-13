@@ -14,17 +14,24 @@ public class BeeManagerDOTS : MonoBehaviour
 
     [Header("GameStats")]
     [SerializeField] private int startBeeCount = 50;
+    public int actualYellow;
+    public int actualBlue;
 
     [Header("Graphics")]
     [SerializeField] private Mesh beeMesh;
     [SerializeField] private Material blueMaterial, yellowMaterial;
 
     [Header("BeeStats")]
-    public NativeArray<float3> positionArray;
+    //public NativeArray<float3> positionArray;
+    public int teamRepulsion = 10;
+    public int teamAttraction = 10;
     public float beeMoveSpeed = 5;
-   // public float BeeMoveSpeed { get { return beeMoveSpeed; } }
+    
 
-    EntityManager entityManager;
+    public EntityManager entityManager;
+    public NativeArray<Entity> blueArray;
+    public NativeArray<Entity> yellowArray;
+
     EntityArchetype blueArchetype, yellowArchetype;
 
     private void Awake()
@@ -38,19 +45,19 @@ public class BeeManagerDOTS : MonoBehaviour
         entityManager = World.Active.EntityManager;
 
         //creo l'archetipo
-        blueArchetype = entityManager.CreateArchetype(typeof(Translation), typeof(RenderMesh), typeof(LocalToWorld), typeof(BeeComponent));
-        yellowArchetype = entityManager.CreateArchetype(typeof(Translation), typeof(RenderMesh), typeof(LocalToWorld), typeof(BeeComponent));
+        blueArchetype = entityManager.CreateArchetype(typeof(Translation), typeof(RenderMesh), typeof(LocalToWorld), typeof(BeeComponent), typeof(TeamComponent));
+        yellowArchetype = entityManager.CreateArchetype(typeof(Translation), typeof(RenderMesh), typeof(LocalToWorld), typeof(BeeComponent), typeof(TeamComponent));
 
         //uso un array nativo per allocare le entities
-        NativeArray<Entity> blueArray = new NativeArray<Entity>(startBeeCount / 2, Allocator.Temp);
-        NativeArray<Entity> yellowArray = new NativeArray<Entity>(startBeeCount / 2, Allocator.Temp);
+        blueArray = new NativeArray<Entity>(startBeeCount / 2, Allocator.Persistent);
+        yellowArray = new NativeArray<Entity>(startBeeCount / 2, Allocator.Persistent);
 
-        positionArray = new NativeArray<float3>(startBeeCount, Allocator.Persistent);
+        //positionArray = new NativeArray<float3>(startBeeCount, Allocator.Persistent);
 
         entityManager.CreateEntity(blueArchetype, blueArray);
         entityManager.CreateEntity(yellowArchetype, yellowArray);
 
-        for (int i = 0; i < blueArray.Length; i++)
+        for (int i = 0; i < startBeeCount / 2; i++)
         {
             Entity entity = blueArray[i];
 
@@ -62,17 +69,23 @@ public class BeeManagerDOTS : MonoBehaviour
                 material = blueMaterial,
             });
 
-            positionArray[i] = entityManager.GetComponentData<Translation>(entity).Value;
+            //positionArray[i] = entityManager.GetComponentData<Translation>(entity).Value;
 
             entityManager.SetComponentData(entity, new BeeComponent
             {
                 team = 0,
-                home = new float3(-Field.size.x, 0, 0)
+                home = new float3(-Field.size.x, 0, 0),
+                randomGenerator = new Unity.Mathematics.Random(2)
             });
             //entityManager.SetSharedComponentData(entity, new MoveSpeedComponent { moveSpeed = beeMoveSpeed });
+
+            entityManager.SetSharedComponentData(entity, new TeamComponent { team = 1 });
+
+            actualBlue++;
         }
 
-        for (int i = 0; i < yellowArray.Length; i++)
+
+        for (int i = 0; i < startBeeCount / 2; i++)
         {
             Entity entity = yellowArray[i];
 
@@ -85,16 +98,27 @@ public class BeeManagerDOTS : MonoBehaviour
             });
 
 
-            positionArray[i + blueArray.Length] = entityManager.GetComponentData<Translation>(entity).Value;
+            //positionArray[i + blueArray.Length] = entityManager.GetComponentData<Translation>(entity).Value;
             //entityManager.SetSharedComponentData(entity, new MoveSpeedComponent { moveSpeed = beeMoveSpeed });
 
             entityManager.SetComponentData(entity, new BeeComponent
             {
                 team = 1,
-                home = new float3(Field.size.x, 0, 0)
+                home = new float3(Field.size.x, 0, 0),
+                randomGenerator = new Unity.Mathematics.Random(2)
             });
+
+            entityManager.SetSharedComponentData(entity, new TeamComponent { team = 2 });
+
+            actualYellow++;
         }
 
+        
+
+    }
+
+    private void OnDisable()
+    {
         blueArray.Dispose();
         yellowArray.Dispose();
     }

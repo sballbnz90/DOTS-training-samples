@@ -8,4 +8,5 @@ public struct BeeComponent : IComponentData
 {
     public int team;
     public float3 home;
+    public Unity.Mathematics.Random randomGenerator;
 }

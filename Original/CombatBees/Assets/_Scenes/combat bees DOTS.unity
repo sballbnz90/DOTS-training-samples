@@ -327,11 +327,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6cdc6988462cfa046b4581d2b3e39693, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  startBeeCount: 1000
+  startBeeCount: 50
+  actualYellow: 0
+  actualBlue: 0
   beeMesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
   blueMaterial: {fileID: 2100000, guid: 53024519f6f02bd4f88dea259ba7b562, type: 2}
   yellowMaterial: {fileID: 2100000, guid: d7967835ec649954bb843ae433cafa20, type: 2}
-  beeMoveSpeed: 50
+  beeMoveSpeed: 0.2
 --- !u!1 &563381092
 GameObject:
   m_ObjectHideFlags: 0
