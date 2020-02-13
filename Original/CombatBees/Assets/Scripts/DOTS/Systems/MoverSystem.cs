@@ -15,7 +15,7 @@ public class MoverSystem : JobComponentSystem
     private struct MoveJob : IJobForEach<Translation, BeeComponent>
     {
         //public EntityCommandBuffer.Concurrent ecb;
-        public NativeArray<Entity> teammates;
+        [ReadOnly] public NativeArray<Entity> teammates;
         public float deltaTime;
         public float beeMoveSpeed;
         //public int attractor;
@@ -32,8 +32,8 @@ public class MoverSystem : JobComponentSystem
             float3 value = c0.Value;
             int attractor = c1.randomGenerator.NextInt(0, teammates.Length - 1);
             int repulsor = c1.randomGenerator.NextInt(0, teammates.Length - 1);
-            
 
+            
            // value += baseVel  * (beeMoveSpeed * deltaTime);
             value += (translationData[teammates[attractor]].Position - c0.Value) * deltaTime;
             value -= (translationData[teammates[repulsor]].Position - c0.Value) * deltaTime;

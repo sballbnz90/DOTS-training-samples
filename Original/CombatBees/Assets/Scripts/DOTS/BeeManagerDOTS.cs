@@ -75,7 +75,7 @@ public class BeeManagerDOTS : MonoBehaviour
             {
                 team = 0,
                 home = new float3(-Field.size.x, 0, 0),
-                randomGenerator = new Unity.Mathematics.Random(2)
+                randomGenerator = new Unity.Mathematics.Random((uint)UnityEngine.Random.Range(1, 10000))
             });
             //entityManager.SetSharedComponentData(entity, new MoveSpeedComponent { moveSpeed = beeMoveSpeed });
 
@@ -105,7 +105,7 @@ public class BeeManagerDOTS : MonoBehaviour
             {
                 team = 1,
                 home = new float3(Field.size.x, 0, 0),
-                randomGenerator = new Unity.Mathematics.Random(2)
+                randomGenerator = new Unity.Mathematics.Random((uint)UnityEngine.Random.Range(1, 10000))
             });
 
             entityManager.SetSharedComponentData(entity, new TeamComponent { team = 2 });
