@@ -117,6 +117,7 @@ public class ResourceManager : MonoBehaviour
         {
             SpawnResource();
         }
+        Debug.Log(startResourceCount);
     }
 
     void Update()

@@ -26,6 +26,8 @@ public class BeeEntityManager : MonoBehaviour
     public float teamAttraction;
     public float teamRepulsion;
     public float aggression;
+    public float grabDistance;
+    public float carryForce;
     public float attackDistance;
     public float chaseForce;
     public float attackForce;

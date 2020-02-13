@@ -573,7 +573,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f5cfea5047ab3c448b7598a200d0973a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  beeMesh: {fileID: 10210, guid: 0000000000000000e000000000000000, type: 0}
+  beeMesh: {fileID: 10208, guid: 0000000000000000e000000000000000, type: 0}
   yMat: {fileID: 2100000, guid: 7622351e02f00c744bf41f74649b056f, type: 2}
   bMat: {fileID: 2100000, guid: 205326d9629869542b9adc3a80209a1d, type: 2}
   initBeeCount: 500
@@ -585,6 +585,8 @@ MonoBehaviour:
   teamAttraction: 5
   teamRepulsion: 4
   aggression: 0.5
+  grabDistance: 25
+  carryForce: 0.5
   attackDistance: 4
   chaseForce: 50
   attackForce: 500
@@ -615,14 +617,14 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6b53ac37a41015e4ba60d880cb162ebc, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  resourceMesh: {fileID: 0}
-  rescourceMat: {fileID: 0}
-  resourceSize: 0
-  snapStiffness: 0
-  carryStiffness: 0
-  spawnRate: 0.1
-  beesPerResource: 0
-  startResourceCount: 0
+  resourceMesh: {fileID: 10206, guid: 0000000000000000e000000000000000, type: 0}
+  resourceMat: {fileID: 2100000, guid: 369b682ef7790ad4eb8caef908378e07, type: 2}
+  resourceSize: 0.75
+  snapStiffness: 2
+  carryStiffness: 15
+  spawnRate: 10
+  beesPerResource: 8
+  startResourceCount: 500
 --- !u!1 &1496960977
 GameObject:
   m_ObjectHideFlags: 0

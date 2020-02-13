@@ -72,7 +72,23 @@ public class BeeComponentSystem : ComponentSystem
                     else
                     {
                         //da aggiungere la parte delle risorse
-                        beeComponent.resourceTarget = Entity.Null;
+                        int random = UnityEngine.Random.Range(0, 499);
+                        int k = 0;
+                        Entity resource = Entity.Null;
+                        Entities.ForEach((Entity r, ref ResourceComponent rc) =>
+                        {
+                            if (random == k)
+                            {
+                                resource = r;
+                                Debug.Log("scelta una");
+                            }
+                            k++;
+                        });
+                        if (resource != Entity.Null && EntityManager.GetComponentData<ResourceComponent>(resource).holder == Entity.Null)
+                        {
+                            beeComponent.resourceTarget = resource;
+                        }
+
                     }
                 }
                 else if (beeComponent.enemyTarget != Entity.Null)
@@ -111,7 +127,62 @@ public class BeeComponentSystem : ComponentSystem
                 }
                 else if (beeComponent.resourceTarget != Entity.Null)
                 {
-                    //aggiungere tutta la parte di resources
+                    Entity resource = beeComponent.resourceTarget;
+                    if (EntityManager.GetComponentData<ResourceComponent>(beeComponent.resourceTarget).holder == Entity.Null)
+                    {
+                        if (EntityManager.GetComponentData<ResourceComponent>(beeComponent.resourceTarget).dead)
+                        {
+                            beeComponent.resourceTarget = Entity.Null;
+                        }
+                        else
+                        {
+                            delta = EntityManager.GetComponentData<Translation>(beeComponent.resourceTarget).Value - translation.Value;
+                            float sqrDist = delta.x * delta.x + delta.y * delta.y + delta.z * delta.z;
+                            if (sqrDist > BeeEntityManager.bemInstance.grabDistance * BeeEntityManager.bemInstance.grabDistance)
+                            {
+                                bdevcomponent.velocity += delta * (BeeEntityManager.bemInstance.chaseForce * deltaTime / Mathf.Sqrt(sqrDist));
+                            }
+                            else if (EntityManager.GetComponentData<ResourceComponent>(beeComponent.resourceTarget).stacked)
+                            {
+                                EntityManager.SetComponentData(beeComponent.resourceTarget, new ResourceComponent
+                                {
+                                    holder = e,
+                                    stacked = false,
+                                });
+                                ResouceEntityManager.rinstance.stackHeights[EntityManager.GetComponentData<ResourceComponent>(beeComponent.resourceTarget).gridX, EntityManager.GetComponentData<ResourceComponent>(beeComponent.resourceTarget).gridY]--;
+
+                            }
+                        }
+                    }
+                    else if(EntityManager.GetComponentData<ResourceComponent>(beeComponent.resourceTarget).holder == e)
+                    {
+                        Vector3 targetPos = new Vector3(-Field.size.x * .45f + Field.size.x * .9f * beeComponent.team, 0f,translation.Value.z);
+                        delta = targetPos - (Vector3)translation.Value;
+                        dist = Mathf.Sqrt(delta.x * delta.x + delta.y * delta.y + delta.z * delta.z);
+                        bdevcomponent.velocity += (targetPos - (Vector3)translation.Value) * (BeeEntityManager.bemInstance.carryForce  / dist);
+                        if (dist < 1f)
+                        {
+                            EntityManager.SetComponentData(beeComponent.resourceTarget, new ResourceComponent
+                            {
+                                holder = Entity.Null,
+ 
+                            });
+                            beeComponent.resourceTarget = Entity.Null;
+                        }
+                        else
+                        {
+                            beeComponent.isHoldingResource = true;
+                        }
+                    }
+                    else if (EntityManager.GetComponentData<BeeComponent>(EntityManager.GetComponentData<ResourceComponent>(beeComponent.resourceTarget).holder).team != beeComponent.team)
+                    {
+                        beeComponent.enemyTarget = EntityManager.GetComponentData<ResourceComponent>(beeComponent.resourceTarget).holder;
+                    }
+                    else if (EntityManager.GetComponentData<BeeComponent>(EntityManager.GetComponentData<ResourceComponent>(beeComponent.resourceTarget).holder).team == beeComponent.team)
+                    {
+                        beeComponent.resourceTarget = Entity.Null;
+                    }
+
                 }
             }
             else
