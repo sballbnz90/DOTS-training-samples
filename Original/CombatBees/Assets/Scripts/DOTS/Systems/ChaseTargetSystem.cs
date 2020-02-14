@@ -16,15 +16,34 @@ public class ChaseTargetSystem : JobComponentSystem
         [ReadOnly] public NativeArray<Entity> enemyBees;
         public float deltaTime;
         public float chaseSpeed;
-
+        [ReadOnly] public ComponentDataFromEntity<LocalToWorld> translationData;
         public ArchetypeChunkComponentType<Translation> TransType;
 
         public void Execute(ArchetypeChunk chunk, int chunkIndex, int firstEntityIndex)
         {
             var chunkTranslations = chunk.GetNativeArray(TransType);
+            Unity.Mathematics.Random rand = new Unity.Mathematics.Random(1);
+            var chunkTrans = chunk.GetNativeArray(TransType);
+
             for (int i = 0; i < chunk.Count; i++)
             {
-                var target = enemyBees[i];
+                var target = rand.NextInt(0, enemyBees.Length);
+                float3 targetPos = new float3(0);
+                float3 myPos = chunkTrans[i].Value;
+
+                if (translationData.Exists(enemyBees[target]))
+                {
+                    targetPos = translationData[enemyBees[target]].Position;
+                }
+
+                float3 value = new float3(0);
+                value += math.normalizesafe(targetPos - myPos) * deltaTime * chaseSpeed;
+
+                chunkTrans[i] = new Translation
+                {
+                    Value = myPos + value
+                };
+
             }
         }
     }
@@ -44,6 +63,7 @@ public class ChaseTargetSystem : JobComponentSystem
 
     protected override JobHandle OnUpdate(JobHandle inputDeps)
     {
+        ComponentDataFromEntity<LocalToWorld> trData = GetComponentDataFromEntity<LocalToWorld>(true);
         JobHandle dep = inputDeps;
 
         if (teamYellow.IsCreated)
@@ -56,14 +76,15 @@ public class ChaseTargetSystem : JobComponentSystem
         {
             teamBlue.Dispose();
         }
-        teamBlue = yellowBees.ToEntityArray(Allocator.TempJob);
+        teamBlue = blueBees.ToEntityArray(Allocator.TempJob);
 
         var jobHandle = new ChaseBeeJob
         {
             enemyBees = teamBlue,
             deltaTime = Time.deltaTime,
-            chaseSpeed = BeeManagerDOTS.Instance.beeMoveSpeed,
-            TransType = GetArchetypeChunkComponentType<Translation>()
+            chaseSpeed = BeeManagerDOTS.Instance.beeChaseSpeed,
+            TransType = GetArchetypeChunkComponentType<Translation>(),
+            translationData = GetComponentDataFromEntity<LocalToWorld>()
         }.Schedule(yellowBees, dep);
         dep = jobHandle;
 
@@ -71,8 +92,9 @@ public class ChaseTargetSystem : JobComponentSystem
         {
             enemyBees = teamYellow,
             deltaTime = Time.deltaTime,
-            chaseSpeed = BeeManagerDOTS.Instance.beeMoveSpeed,
-            TransType = GetArchetypeChunkComponentType<Translation>()
+            chaseSpeed = BeeManagerDOTS.Instance.beeChaseSpeed,
+            TransType = GetArchetypeChunkComponentType<Translation>(),
+            translationData = GetComponentDataFromEntity<LocalToWorld>()
         }.Schedule(blueBees, dep);
         dep = jobHandle;
 

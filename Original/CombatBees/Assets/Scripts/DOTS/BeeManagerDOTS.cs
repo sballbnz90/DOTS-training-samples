@@ -26,6 +26,7 @@ public class BeeManagerDOTS : MonoBehaviour
     public int teamRepulsion = 10;
     public int teamAttraction = 10;
     public float beeMoveSpeed = 5;
+    public float beeChaseSpeed = 10;
 
 
     public EntityManager entityManager;
