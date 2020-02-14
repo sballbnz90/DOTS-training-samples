@@ -26,19 +26,14 @@ public class MoverSystem : JobComponentSystem
 
         public void Execute(ref Translation c0, ref BeeComponent c1)
         {
-            float3 value = c0.Value;
+            float3 value = new float3(0);
             int attractor = c1.randomGenerator.NextInt(0, teammates.Length - 1);
             int repulsor = c1.randomGenerator.NextInt(0, teammates.Length - 1);
 
-            
-           // value += baseVel  * (beeMoveSpeed * deltaTime);
-            value += (translationData[teammates[attractor]].Position - c0.Value) * deltaTime;
-            value -= (translationData[teammates[repulsor]].Position - c0.Value) * deltaTime;
-            //value -= math.normalize(c1.home) * beeMoveSpeed * deltaTime;
-            //value += (translationData[teammates[attractor]].Position - c0.Value) * (teamAttraction * deltaTime / math.distance(translationData[teammates[attractor]].Position, c0.Value));
-            //value -= (translationData[teammates[repulsor]].Position - c0.Value) * (teamRepulsion * deltaTime / math.distance(translationData[teammates[repulsor]].Position, c0.Value));
+            value += math.normalizesafe(translationData[teammates[attractor]].Position - c0.Value, 0.0f) * beeMoveSpeed * deltaTime * teamAttraction;
+            value -= math.normalizesafe(translationData[teammates[repulsor]].Position - c0.Value, 0.0f) * beeMoveSpeed * deltaTime * teamRepulsion;
 
-            c0.Value = value;
+            c0.Value += value * deltaTime;
         }
     }
 
@@ -52,63 +47,71 @@ public class MoverSystem : JobComponentSystem
     {
         m_entityCommandBufferSystem = World.GetOrCreateSystem<EntityCommandBufferSystem>();
 
-        yellowBees = GetEntityQuery(typeof(Translation), typeof(BeeComponent), typeof(TeamComponent));
-        blueBees = GetEntityQuery(typeof(Translation), typeof(BeeComponent), typeof(TeamComponent));
-
+        yellowBees = GetEntityQuery(typeof(Translation), typeof(BeeComponent), typeof(TeamYellow));
+        blueBees = GetEntityQuery(typeof(Translation), typeof(BeeComponent), typeof(TeamBlue));
     }
+
+    NativeArray<Entity> teamYellow;
+    NativeArray<Entity> teamBlue;
 
     protected override JobHandle OnUpdate(JobHandle inputDeps)
     {
         var dep = inputDeps;
         ComponentDataFromEntity<LocalToWorld> trData = GetComponentDataFromEntity<LocalToWorld>(true);
 
-        if (BeeManagerDOTS.Instance.yellowArray.Length != 0)
+        if (teamYellow.IsCreated)
         {
-
-
-            yellowBees.SetFilter(new TeamComponent() { team = 2 });
-
-            var yellowJob = new MoveJob
-            {
-                // ecb = m_entityCommandBufferSystem.CreateCommandBuffer().ToConcurrent(),
-                //positionArray = BeeManagerDOTS.Instance.positionArray,
-                teammates = BeeManagerDOTS.Instance.yellowArray,
-                deltaTime = Time.deltaTime,
-                beeMoveSpeed = BeeManagerDOTS.Instance.beeMoveSpeed,
-                //attractor = UnityEngine.Random.Range(0, BeeManagerDOTS.Instance.actualYellow),
-                //repulsor = UnityEngine.Random.Range(0, BeeManagerDOTS.Instance.actualYellow),
-                translationData = trData,
-                teamRepulsion = BeeManagerDOTS.Instance.teamRepulsion,
-                teamAttraction = BeeManagerDOTS.Instance.teamAttraction,
-                
-            }.Schedule(yellowBees, dep);
-
-            dep = yellowJob;
-
-            blueBees.SetFilter(new TeamComponent() { team = 1 });
-
-            var blueJob = new MoveJob
-            {
-                teammates = BeeManagerDOTS.Instance.blueArray,
-                deltaTime = Time.deltaTime,
-                beeMoveSpeed = BeeManagerDOTS.Instance.beeMoveSpeed * 2,
-                //attractor = UnityEngine.Random.Range(0, BeeManagerDOTS.Instance.actualBlue),
-                //repulsor = UnityEngine.Random.Range(0, BeeManagerDOTS.Instance.actualBlue),
-                translationData = trData,
-                teamRepulsion = BeeManagerDOTS.Instance.teamRepulsion,
-                teamAttraction = BeeManagerDOTS.Instance.teamAttraction,
-
-            }.Schedule(blueBees, dep);
-
-            // m_entityCommandBufferSystem.AddJobHandleForProducer(moverJob);
-
-
-
-            dep = blueJob;
+            teamYellow.Dispose();
         }
+        teamYellow = yellowBees.ToEntityArray(Allocator.TempJob);
+        var yellowJob = new MoveJob
+        {
+            // ecb = m_entityCommandBufferSystem.CreateCommandBuffer().ToConcurrent(),
+            //positionArray = BeeManagerDOTS.Instance.positionArray,
+            teammates = teamYellow,
+            deltaTime = Time.deltaTime,
+            beeMoveSpeed = BeeManagerDOTS.Instance.beeMoveSpeed,
+            //attractor = UnityEngine.Random.Range(0, BeeManagerDOTS.Instance.actualYellow),
+            //repulsor = UnityEngine.Random.Range(0, BeeManagerDOTS.Instance.actualYellow),
+            translationData = trData,
+            teamRepulsion = BeeManagerDOTS.Instance.teamRepulsion,
+            teamAttraction = BeeManagerDOTS.Instance.teamAttraction,
+
+        }.Schedule(yellowBees, dep);
+
+        dep = yellowJob;
+
+        if (teamBlue.IsCreated)
+        {
+            teamBlue.Dispose();
+        }
+        teamBlue = blueBees.ToEntityArray(Allocator.TempJob);
+        var blueJob = new MoveJob
+        {
+            teammates = teamBlue,
+            deltaTime = Time.deltaTime,
+            beeMoveSpeed = BeeManagerDOTS.Instance.beeMoveSpeed * 2,
+            //attractor = UnityEngine.Random.Range(0, BeeManagerDOTS.Instance.actualBlue),
+            //repulsor = UnityEngine.Random.Range(0, BeeManagerDOTS.Instance.actualBlue),
+            translationData = trData,
+            teamRepulsion = BeeManagerDOTS.Instance.teamRepulsion,
+            teamAttraction = BeeManagerDOTS.Instance.teamAttraction,
+
+        }.Schedule(blueBees, dep);
+
+        // m_entityCommandBufferSystem.AddJobHandleForProducer(moverJob);
+        dep = blueJob;
 
         return dep;
         //return moverJob.Schedule(yellowBees);
+    }
 
+
+    protected override void OnDestroy()
+    {
+        base.OnDestroy();
+
+        teamYellow.Dispose();
+        teamBlue.Dispose();
     }
 }

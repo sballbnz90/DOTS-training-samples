@@ -29,9 +29,6 @@ public class BeeManagerDOTS : MonoBehaviour
 
 
     public EntityManager entityManager;
-    public NativeArray<Entity> blueArray;
-    public NativeArray<Entity> yellowArray;
-
     EntityArchetype blueArchetype, yellowArchetype;
 
     private void Awake()
@@ -45,24 +42,14 @@ public class BeeManagerDOTS : MonoBehaviour
         entityManager = World.Active.EntityManager;
 
         //creo l'archetipo
-        blueArchetype = entityManager.CreateArchetype(typeof(Translation), typeof(RenderMesh), typeof(LocalToWorld), typeof(BeeComponent), typeof(TeamComponent));
-        yellowArchetype = entityManager.CreateArchetype(typeof(Translation), typeof(RenderMesh), typeof(LocalToWorld), typeof(BeeComponent), typeof(TeamComponent));
-
-        //uso un array nativo per allocare le entities
-        blueArray = new NativeArray<Entity>(startBeeCount / 2, Allocator.Persistent);
-        yellowArray = new NativeArray<Entity>(startBeeCount / 2, Allocator.Persistent);
-
-        //positionArray = new NativeArray<float3>(startBeeCount, Allocator.Persistent);
-
-        entityManager.CreateEntity(blueArchetype, blueArray);
-        entityManager.CreateEntity(yellowArchetype, yellowArray);
+        blueArchetype = entityManager.CreateArchetype(typeof(Translation), typeof(RenderMesh), typeof(LocalToWorld), typeof(BeeComponent), typeof(TeamBlue));
+        yellowArchetype = entityManager.CreateArchetype(typeof(Translation), typeof(RenderMesh), typeof(LocalToWorld), typeof(BeeComponent), typeof(TeamYellow));
 
         for (int i = 0; i < startBeeCount / 2; i++)
         {
-            Entity entity = blueArray[i];
+            Entity entity = entityManager.CreateEntity(blueArchetype);
 
             entityManager.SetComponentData(entity, new Translation { Value = new float3(UnityEngine.Random.Range(-Field.size.x / 2, 0), UnityEngine.Random.Range(-Field.size.y / 2, Field.size.y / 2), UnityEngine.Random.Range(-Field.size.z / 2, Field.size.z / 2)) });
-
             entityManager.SetSharedComponentData(entity, new RenderMesh
             {
                 mesh = beeMesh,
@@ -75,19 +62,17 @@ public class BeeManagerDOTS : MonoBehaviour
             {
                 team = 1,
                 home = new float3(-Field.size.x, 0, 0),
-                randomGenerator = new Unity.Mathematics.Random((uint)UnityEngine.Random.Range(1, 10000))
+                randomGenerator = new Unity.Mathematics.Random((uint)i +1)
             });
+
             //entityManager.SetSharedComponentData(entity, new MoveSpeedComponent { moveSpeed = beeMoveSpeed });
 
-            entityManager.SetSharedComponentData(entity, new TeamComponent { team = 1 });
+            entityManager.SetSharedComponentData(entity, new TeamBlue());
 
             actualBlue++;
-        }
 
-
-        for (int i = 0; i < startBeeCount / 2; i++)
-        {
-            Entity entity = yellowArray[i];
+            // Yellow
+            entity = entityManager.CreateEntity(yellowArchetype);
 
             entityManager.SetComponentData(entity, new Translation { Value = new float3(UnityEngine.Random.Range(0, Field.size.x / 2), UnityEngine.Random.Range(-Field.size.y / 2, Field.size.y / 2), UnityEngine.Random.Range(-Field.size.z / 2, Field.size.z / 2)) });
 
@@ -105,21 +90,12 @@ public class BeeManagerDOTS : MonoBehaviour
             {
                 team = 2,
                 home = new float3(Field.size.x, 0, 0),
-                randomGenerator = new Unity.Mathematics.Random((uint)UnityEngine.Random.Range(1, 10000))
+                randomGenerator = new Unity.Mathematics.Random((uint)i +1)
             });
 
-            entityManager.SetSharedComponentData(entity, new TeamComponent { team = 2 });
+            entityManager.SetSharedComponentData(entity, new TeamYellow());
 
             actualYellow++;
         }
-
-
-
-    }
-
-    private void OnDisable()
-    {
-        blueArray.Dispose();
-        yellowArray.Dispose();
     }
 }

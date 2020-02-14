@@ -16,45 +16,74 @@ public class ChaseTargetSystem : JobComponentSystem
         [ReadOnly] public NativeArray<Entity> enemyBees;
         public float deltaTime;
         public float chaseSpeed;
-        public ArchetypeChunkComponentType<BeeComponent> beeType;
-        public ArchetypeChunkComponentType<Translation> translations;
-        //public ArchetypeChunkComponentType<TeamComponent> teamType;
+
+        public ArchetypeChunkComponentType<Translation> TransType;
 
         public void Execute(ArchetypeChunk chunk, int chunkIndex, int firstEntityIndex)
         {
-            var teams = chunk.GetNativeArray(beeType);
-
+            var chunkTranslations = chunk.GetNativeArray(TransType);
             for (int i = 0; i < chunk.Count; i++)
             {
-                
-
-
-
                 var target = enemyBees[i];
             }
-
-            throw new System.NotImplementedException();
         }
     }
 
     private EntityQuery enemyChase;
-    private EntityCommandBufferSystem m_entityCommandBufferSystem;
-
 
     protected override void OnCreate()
     {
-        m_entityCommandBufferSystem = World.GetOrCreateSystem<EntityCommandBufferSystem>();
-
-        enemyChase = GetEntityQuery(typeof(Translation), typeof(BeeComponent), typeof(TeamComponent));
-
+        yellowBees = GetEntityQuery(typeof(Translation), typeof(BeeComponent), typeof(TeamYellow));
+        blueBees = GetEntityQuery(typeof(Translation), typeof(BeeComponent), typeof(TeamBlue));
     }
+
+    private EntityQuery yellowBees;
+    private EntityQuery blueBees;
+    NativeArray<Entity> teamYellow;
+    NativeArray<Entity> teamBlue;
 
     protected override JobHandle OnUpdate(JobHandle inputDeps)
     {
-        
+        JobHandle dep = inputDeps;
 
+        if (teamYellow.IsCreated)
+        {
+            teamYellow.Dispose();
+        }
+        teamYellow = yellowBees.ToEntityArray(Allocator.TempJob);
 
+        if (teamBlue.IsCreated)
+        {
+            teamBlue.Dispose();
+        }
+        teamBlue = yellowBees.ToEntityArray(Allocator.TempJob);
 
-        throw new System.NotImplementedException();
+        var jobHandle = new ChaseBeeJob
+        {
+            enemyBees = teamBlue,
+            deltaTime = Time.deltaTime,
+            chaseSpeed = BeeManagerDOTS.Instance.beeMoveSpeed,
+            TransType = GetArchetypeChunkComponentType<Translation>()
+        }.Schedule(yellowBees, dep);
+        dep = jobHandle;
+
+        jobHandle = new ChaseBeeJob
+        {
+            enemyBees = teamYellow,
+            deltaTime = Time.deltaTime,
+            chaseSpeed = BeeManagerDOTS.Instance.beeMoveSpeed,
+            TransType = GetArchetypeChunkComponentType<Translation>()
+        }.Schedule(blueBees, dep);
+        dep = jobHandle;
+
+        return dep;
+    }
+
+    protected override void OnDestroy()
+    {
+        base.OnDestroy();
+
+        teamYellow.Dispose();
+        teamBlue.Dispose();
     }
 }

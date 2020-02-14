@@ -144,7 +144,7 @@ public class BeeManager : MonoBehaviour
                 float dist = Mathf.Sqrt(delta.x * delta.x + delta.y * delta.y + delta.z * delta.z);
                 if (dist > 0f)
                 {
-                    bee.velocity += delta * (teamAttraction * deltaTime / dist);
+                    bee.velocity += delta * teamAttraction * deltaTime / dist;
                 }
 
                 Bee repellentFriend = allies[Random.Range(0, allies.Count)];
@@ -152,7 +152,7 @@ public class BeeManager : MonoBehaviour
                 dist = Mathf.Sqrt(delta.x * delta.x + delta.y * delta.y + delta.z * delta.z);
                 if (dist > 0f)
                 {
-                    bee.velocity -= delta * (teamRepulsion * deltaTime / dist);
+                    bee.velocity -= delta * teamRepulsion * deltaTime / dist;
                 }
 
                 if (bee.enemyTarget == null && bee.resourceTarget == null)
