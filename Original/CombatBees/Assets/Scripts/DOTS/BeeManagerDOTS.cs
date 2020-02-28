@@ -40,11 +40,13 @@ public class BeeManagerDOTS : MonoBehaviour
     private void Start()
     {
         //classe che gestisce le entities
-        entityManager = World.Active.EntityManager;
+        entityManager = World.DefaultGameObjectInjectionWorld.EntityManager;
 
         //creo l'archetipo
-        blueArchetype = entityManager.CreateArchetype(typeof(Translation), typeof(RenderMesh), typeof(LocalToWorld), typeof(BeeComponent), typeof(TeamBlue));
-        yellowArchetype = entityManager.CreateArchetype(typeof(Translation), typeof(RenderMesh), typeof(LocalToWorld), typeof(BeeComponent), typeof(TeamYellow));
+        blueArchetype = entityManager.CreateArchetype(typeof(Translation), typeof(RenderMesh), typeof(LocalToWorld), typeof(BeeComponent), typeof(TeamBlue),
+            typeof(ChunkWorldRenderBounds), typeof(PerInstanceCullingTag), typeof(RenderBounds), typeof(Rotation), typeof(WorldRenderBounds));
+        yellowArchetype = entityManager.CreateArchetype(typeof(Translation), typeof(RenderMesh), typeof(LocalToWorld), typeof(BeeComponent), typeof(TeamYellow),
+            typeof(ChunkWorldRenderBounds), typeof(PerInstanceCullingTag), typeof(RenderBounds), typeof(Rotation), typeof(WorldRenderBounds));
 
         for (int i = 0; i < startBeeCount / 2; i++)
         {
@@ -63,7 +65,7 @@ public class BeeManagerDOTS : MonoBehaviour
             {
                 team = 1,
                 home = new float3(-Field.size.x, 0, 0),
-                randomGenerator = new Unity.Mathematics.Random((uint)i +1)
+                randomGenerator = new Unity.Mathematics.Random((uint)i + 1)
             });
 
             //entityManager.SetSharedComponentData(entity, new MoveSpeedComponent { moveSpeed = beeMoveSpeed });
@@ -91,7 +93,7 @@ public class BeeManagerDOTS : MonoBehaviour
             {
                 team = 2,
                 home = new float3(Field.size.x, 0, 0),
-                randomGenerator = new Unity.Mathematics.Random((uint)i +1)
+                randomGenerator = new Unity.Mathematics.Random((uint)i + 1)
             });
 
             entityManager.SetSharedComponentData(entity, new TeamYellow());

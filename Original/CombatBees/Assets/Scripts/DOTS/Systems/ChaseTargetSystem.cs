@@ -81,7 +81,7 @@ public class ChaseTargetSystem : JobComponentSystem
         var jobHandle = new ChaseBeeJob
         {
             enemyBees = teamBlue,
-            deltaTime = Time.deltaTime,
+            deltaTime = Time.DeltaTime,
             chaseSpeed = BeeManagerDOTS.Instance.beeChaseSpeed,
             TransType = GetArchetypeChunkComponentType<Translation>(),
             translationData = GetComponentDataFromEntity<LocalToWorld>()
@@ -91,7 +91,7 @@ public class ChaseTargetSystem : JobComponentSystem
         jobHandle = new ChaseBeeJob
         {
             enemyBees = teamYellow,
-            deltaTime = Time.deltaTime,
+            deltaTime = Time.DeltaTime,
             chaseSpeed = BeeManagerDOTS.Instance.beeChaseSpeed,
             TransType = GetArchetypeChunkComponentType<Translation>(),
             translationData = GetComponentDataFromEntity<LocalToWorld>()

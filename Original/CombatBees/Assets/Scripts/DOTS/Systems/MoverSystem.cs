@@ -69,7 +69,7 @@ public class MoverSystem : JobComponentSystem
             // ecb = m_entityCommandBufferSystem.CreateCommandBuffer().ToConcurrent(),
             //positionArray = BeeManagerDOTS.Instance.positionArray,
             teammates = teamYellow,
-            deltaTime = Time.deltaTime,
+            deltaTime = Time.DeltaTime,
             beeMoveSpeed = BeeManagerDOTS.Instance.beeMoveSpeed,
             //attractor = UnityEngine.Random.Range(0, BeeManagerDOTS.Instance.actualYellow),
             //repulsor = UnityEngine.Random.Range(0, BeeManagerDOTS.Instance.actualYellow),
@@ -89,7 +89,7 @@ public class MoverSystem : JobComponentSystem
         var blueJob = new MoveJob
         {
             teammates = teamBlue,
-            deltaTime = Time.deltaTime,
+            deltaTime = Time.DeltaTime,
             beeMoveSpeed = BeeManagerDOTS.Instance.beeMoveSpeed * 2,
             //attractor = UnityEngine.Random.Range(0, BeeManagerDOTS.Instance.actualBlue),
             //repulsor = UnityEngine.Random.Range(0, BeeManagerDOTS.Instance.actualBlue),
