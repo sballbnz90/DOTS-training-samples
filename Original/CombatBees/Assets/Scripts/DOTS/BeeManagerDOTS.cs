@@ -27,7 +27,9 @@ public class BeeManagerDOTS : MonoBehaviour
     public int teamAttraction = 10;
     public float beeMoveSpeed = 5;
     public float beeChaseSpeed = 10;
-
+    public float aggressivenessTreshold = 0.5f;
+    public float attackRange = 0.5f;
+    public float timeToDeath = 0.2f;
 
     public EntityManager entityManager;
     EntityArchetype blueArchetype, yellowArchetype;
@@ -65,7 +67,8 @@ public class BeeManagerDOTS : MonoBehaviour
             {
                 team = 1,
                 home = new float3(-Field.size.x, 0, 0),
-                randomGenerator = new Unity.Mathematics.Random((uint)i + 1)
+                randomGenerator = new Unity.Mathematics.Random((uint)i + 1),
+                aggressiveness = UnityEngine.Random.Range(0f, 1f)
             });
 
             //entityManager.SetSharedComponentData(entity, new MoveSpeedComponent { moveSpeed = beeMoveSpeed });
@@ -93,7 +96,8 @@ public class BeeManagerDOTS : MonoBehaviour
             {
                 team = 2,
                 home = new float3(Field.size.x, 0, 0),
-                randomGenerator = new Unity.Mathematics.Random((uint)i + 1)
+                randomGenerator = new Unity.Mathematics.Random((uint)i + 1),
+                aggressiveness = UnityEngine.Random.Range(0f, 1f)
             });
 
             entityManager.SetSharedComponentData(entity, new TeamYellow());

@@ -1,7 +1,4 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
-using Unity.Entities;
+﻿using Unity.Entities;
 using Unity.Jobs;
 using Unity.Mathematics;
 using Unity.Transforms;
@@ -26,7 +23,7 @@ public class MoverSystem : JobComponentSystem
 
         public void Execute(ref Translation c0, ref BeeComponent c1)
         {
-            float3 value = new float3(0);
+            float3 value = new float3(c1.randomGenerator.NextFloat(-1, 1), c1.randomGenerator.NextFloat(-1, 1), c1.randomGenerator.NextFloat(-1, 1)) * deltaTime;
             int attractor = c1.randomGenerator.NextInt(0, teammates.Length - 1);
             int repulsor = c1.randomGenerator.NextInt(0, teammates.Length - 1);
 

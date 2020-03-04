@@ -13,47 +13,77 @@ public class ChaseTargetSystem : JobComponentSystem
 {
     private struct ChaseBeeJob : IJobChunk
     {
-        [ReadOnly] public NativeArray<Entity> enemyBees;
         public float deltaTime;
         public float chaseSpeed;
+        public float attackRange;
+        public float beeTimeToDeath;
+
+        [ReadOnly] public NativeArray<Entity> enemyBees;
         [ReadOnly] public ComponentDataFromEntity<LocalToWorld> translationData;
-        public ArchetypeChunkComponentType<Translation> TransType;
+        [ReadOnly] public ComponentDataFromEntity<DeathComponent> deathData;
+        [ReadOnly] public ArchetypeChunkComponentType<TargetComponent> targetType;
+        public ArchetypeChunkComponentType<Translation> transType;
+        [ReadOnly] public ArchetypeChunkEntityType entityType;
+
+        public EntityCommandBuffer.Concurrent ecb;
 
         public void Execute(ArchetypeChunk chunk, int chunkIndex, int firstEntityIndex)
         {
-            var chunkTranslations = chunk.GetNativeArray(TransType);
             Unity.Mathematics.Random rand = new Unity.Mathematics.Random(1);
-            var chunkTrans = chunk.GetNativeArray(TransType);
+            var chunkTrans = chunk.GetNativeArray(transType);
+            var chunkTargets = chunk.GetNativeArray(targetType);
+            var entities = chunk.GetNativeArray(entityType);
 
             for (int i = 0; i < chunk.Count; i++)
             {
-                var target = rand.NextInt(0, enemyBees.Length);
-                float3 targetPos = new float3(0);
-                float3 myPos = chunkTrans[i].Value;
-
-                if (translationData.Exists(enemyBees[target]))
+                if (chunkTargets[i].type == TargetTypes.EnemyBee)
                 {
-                    targetPos = translationData[enemyBees[target]].Position;
+                    if (deathData.Exists(chunkTargets[i].target))
+                    {
+                        ecb.RemoveComponent(chunkIndex, entities[i], typeof(TargetComponent));
+                        continue;
+                    }
+
+                    float3 myPos = chunkTrans[i].Value;
+                    float3 targetPos = translationData[chunkTargets[i].target].Position;
+                    float3 delta = targetPos - myPos;
+                    float distanceSquared = delta.x * delta.x + delta.y * delta.y + delta.z + delta.z;
+
+                    if (distanceSquared < attackRange * attackRange)
+                    {
+                        DeathComponent death = new DeathComponent()
+                        {
+                            timeRemaining = beeTimeToDeath
+                        };
+
+                        ecb.SetComponent(chunkIndex, chunkTargets[i].target, death);
+                        ecb.RemoveComponent(chunkIndex, entities[i], typeof(TargetComponent));
+
+                    }
+
+                    float3 value = new float3(0);
+                    value += math.normalizesafe(targetPos - myPos) * deltaTime * chaseSpeed;
+
+                    chunkTrans[i] = new Translation
+                    {
+                        Value = myPos + value
+                    };
+
                 }
-
-                float3 value = new float3(0);
-                value += math.normalizesafe(targetPos - myPos) * deltaTime * chaseSpeed;
-
-                chunkTrans[i] = new Translation
-                {
-                    Value = myPos + value
-                };
-
             }
         }
     }
 
     private EntityQuery enemyChase;
+    private EntityCommandBufferSystem entityCommandBufferSystem;
+
 
     protected override void OnCreate()
     {
-        yellowBees = GetEntityQuery(typeof(Translation), typeof(BeeComponent), typeof(TeamYellow));
-        blueBees = GetEntityQuery(typeof(Translation), typeof(BeeComponent), typeof(TeamBlue));
+        entityCommandBufferSystem = World.GetOrCreateSystem<EntityCommandBufferSystem>();
+
+        yellowBees = GetEntityQuery(typeof(Translation), typeof(BeeComponent), typeof(TeamYellow), typeof(TargetComponent));
+        blueBees = GetEntityQuery(typeof(Translation), typeof(BeeComponent), typeof(TeamBlue), typeof(TargetComponent));
     }
 
     private EntityQuery yellowBees;
@@ -82,9 +112,15 @@ public class ChaseTargetSystem : JobComponentSystem
         {
             enemyBees = teamBlue,
             deltaTime = Time.DeltaTime,
+            attackRange = BeeManagerDOTS.Instance.attackRange,
             chaseSpeed = BeeManagerDOTS.Instance.beeChaseSpeed,
-            TransType = GetArchetypeChunkComponentType<Translation>(),
-            translationData = GetComponentDataFromEntity<LocalToWorld>()
+            beeTimeToDeath = BeeManagerDOTS.Instance.timeToDeath,
+            translationData = GetComponentDataFromEntity<LocalToWorld>(),
+            deathData = GetComponentDataFromEntity<DeathComponent>(),
+            targetType = GetArchetypeChunkComponentType<TargetComponent>(),
+            transType = GetArchetypeChunkComponentType<Translation>(),
+            entityType = GetArchetypeChunkEntityType(),
+            ecb = entityCommandBufferSystem.CreateCommandBuffer().ToConcurrent()
         }.Schedule(yellowBees, dep);
         dep = jobHandle;
 
@@ -92,9 +128,15 @@ public class ChaseTargetSystem : JobComponentSystem
         {
             enemyBees = teamYellow,
             deltaTime = Time.DeltaTime,
+            attackRange = BeeManagerDOTS.Instance.attackRange,
             chaseSpeed = BeeManagerDOTS.Instance.beeChaseSpeed,
-            TransType = GetArchetypeChunkComponentType<Translation>(),
-            translationData = GetComponentDataFromEntity<LocalToWorld>()
+            beeTimeToDeath = BeeManagerDOTS.Instance.timeToDeath,
+            translationData = GetComponentDataFromEntity<LocalToWorld>(),
+            deathData = GetComponentDataFromEntity<DeathComponent>(),
+            targetType = GetArchetypeChunkComponentType<TargetComponent>(),
+            transType = GetArchetypeChunkComponentType<Translation>(),
+            entityType = GetArchetypeChunkEntityType(),
+            ecb = entityCommandBufferSystem.CreateCommandBuffer().ToConcurrent()
         }.Schedule(blueBees, dep);
         dep = jobHandle;
 
@@ -104,6 +146,9 @@ public class ChaseTargetSystem : JobComponentSystem
     protected override void OnDestroy()
     {
         base.OnDestroy();
+
+        //yellowBees.Dispose();
+        //blueBees.Dispose();
 
         teamYellow.Dispose();
         teamBlue.Dispose();
