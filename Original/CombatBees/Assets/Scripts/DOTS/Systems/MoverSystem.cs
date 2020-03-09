@@ -37,12 +37,12 @@ public class MoverSystem : JobComponentSystem
 
     private EntityQuery yellowBees;
     private EntityQuery blueBees;
-    private EntityCommandBufferSystem m_entityCommandBufferSystem;
+    //private EntityCommandBufferSystem m_entityCommandBufferSystem;
 
 
     protected override void OnCreate()
     {
-        m_entityCommandBufferSystem = World.GetOrCreateSystem<EntityCommandBufferSystem>();
+        //m_entityCommandBufferSystem = World.GetOrCreateSystem<EntityCommandBufferSystem>();
 
         yellowBees = GetEntityQuery(typeof(Translation), typeof(BeeComponent), typeof(TeamYellow));
         blueBees = GetEntityQuery(typeof(Translation), typeof(BeeComponent), typeof(TeamBlue));

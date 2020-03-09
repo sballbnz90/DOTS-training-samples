@@ -56,9 +56,9 @@ public class ChaseTargetSystem : JobComponentSystem
                             timeRemaining = beeTimeToDeath
                         };
 
-                        ecb.SetComponent(chunkIndex, chunkTargets[i].target, death);
+                        ecb.AddComponent(chunkIndex, chunkTargets[i].target, death);
                         ecb.RemoveComponent(chunkIndex, entities[i], typeof(TargetComponent));
-
+                        
                     }
 
                     float3 value = new float3(0);
@@ -122,6 +122,8 @@ public class ChaseTargetSystem : JobComponentSystem
             entityType = GetArchetypeChunkEntityType(),
             ecb = entityCommandBufferSystem.CreateCommandBuffer().ToConcurrent()
         }.Schedule(yellowBees, dep);
+
+
         dep = jobHandle;
 
         jobHandle = new ChaseBeeJob
@@ -138,7 +140,11 @@ public class ChaseTargetSystem : JobComponentSystem
             entityType = GetArchetypeChunkEntityType(),
             ecb = entityCommandBufferSystem.CreateCommandBuffer().ToConcurrent()
         }.Schedule(blueBees, dep);
+
+
         dep = jobHandle;
+
+
 
         return dep;
     }
