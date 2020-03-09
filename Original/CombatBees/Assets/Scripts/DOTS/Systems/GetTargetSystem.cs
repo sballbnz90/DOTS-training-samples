@@ -21,8 +21,21 @@ public class GetTargetSystem : JobComponentSystem
     protected override void OnCreate()
     {
         entityCommandBufferSystem = World.GetOrCreateSystem<EntityCommandBufferSystem>();
-        yellowBees = GetEntityQuery(typeof(Translation), typeof(BeeComponent), typeof(TeamYellow)/*, typeof(TargetComponent)*/);
-        blueBees = GetEntityQuery(typeof(Translation), typeof(BeeComponent), typeof(TeamBlue)/*, typeof(TargetComponent)*/);
+
+        var yellowDesc = new EntityQueryDesc
+        {
+            None = new ComponentType[] { typeof(DeathComponent) },
+            All = new ComponentType[] { typeof(Translation), typeof(BeeComponent), typeof(TeamYellow) }
+        };
+
+        var blueDesc = new EntityQueryDesc
+        {
+            None = new ComponentType[] { typeof(DeathComponent) },
+            All = new ComponentType[] { typeof(Translation), typeof(BeeComponent), typeof(TeamBlue) }
+        };
+
+        yellowBees = GetEntityQuery(yellowDesc);
+        blueBees = GetEntityQuery(blueDesc);
     }
 
     protected override JobHandle OnUpdate(JobHandle inputDeps)
